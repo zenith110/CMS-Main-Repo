@@ -1,0 +1,97 @@
+version: "3"
+
+services:
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+  cms-backend:
+    image: zenith110/cms-backend
+    container_name: cms-backend
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.service=cms-backend"
+      - "traefik.http.routers.backend.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.services.backend.loadbalancer.server.port=8443"
+    ports:
+      - 8443:8443
+    env_file:
+      - .env
+    networks:
+      - web
+  cms-frontend:
+    image: zenith110/cms-frontend
+    container_name: cms-frontend
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.service=cms-frontend"
+      - "traefik.http.routers.backend.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.services.backend.loadbalancer.server.port=3000"
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+    networks:
+      - web
+
+  reverse-proxy:
+    # The official v2 Traefik docker image
+    image: traefik
+    restart: unless-stopped
+    environment:
+      - CF_API_EMAIL=${CLOUDFLARE_EMAIL}
+      - CF_API_KEY=${CLOUDFLARE_API_KEY}
+    # Tells Traefik to listen to docker
+    command:
+      # Global settings
+      - --global.checkNewVersion=true
+      - --global.sendAnonymousUsage=false
+      # Entrypoints
+      - --entryPoints.web.address=:80
+      - --entryPoints.websecure.address=:443
+      # Log
+      - --log=true
+      - --log.level=DEBUG # (Default: error) DEBUG, INFO, WARN, ERROR, FATAL, PANIC
+      # Certificate
+      - --certificatesResolvers.dns-cloudflare.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory # LetsEncrypt Staging Server
+      - --certificatesResolvers.dns-cloudflare.acme.email=${CLOUDFLARE_EMAIL}
+      - --certificatesResolvers.dns-cloudflare.acme.storage=/acme.json
+      - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.provider=cloudflare
+      # Docker provider
+      - --providers.docker=true
+      - --providers.docker.endpoint=unix:///var/run/docker.sock
+      - --providers.docker.exposedByDefault=false
+      - --providers.docker.network=web
+      - --providers.docker.swarmMode=false
+      - --providers.docker.defaultRule=Host(`{{ index .Labels "com.docker.compose.service" }}.$DOMAIN`)
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+    ports:
+      # The HTTP port
+      - "80:80"
+      # The HTTPS port
+      - "443:443"
+    networks:
+      - web
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./acme.json:/acme.json
+   
+networks:
+  web:
+    external:
+      name: web
