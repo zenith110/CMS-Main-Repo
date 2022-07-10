@@ -67,7 +67,7 @@ services:
     networks:
       - web
     image: 'ghcr.io/zitadel/zitadel:v2.0.0-v2-alpha.33-amd64'
-    command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled'
+    command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters"'
     environment:
       - 'ZITADEL_DATABASE_HOST=db'
       - 'ZITADEL_EXTERNALSECURE=false'
@@ -89,7 +89,7 @@ services:
     networks:
       - 'zitadel'
     image: 'cockroachdb/cockroach:v22.1.0'
-    command: 'start-single-node --insecure'
+    command: 'start-single-node'
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health?ready=1"]
       interval: '10s'
