@@ -43,7 +43,64 @@ services:
       - .env
     networks:
       - web
+  zinc:
+    image: public.ecr.aws/h9e2j3o7/zinc:latest
+    container_name: zinc
+    volumes:
+      - ./zinc:/data
+    ports:
+      - "4080:4080"
+    depends_on:
+      - graphql
+      - mongo
+    env_file:
+      - .env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.zinc.service=zinc"
+      - "traefik.http.routers.zinc.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.zinc.entrypoints=websecure"
+      - "traefik.http.services.zinv.loadbalancer.server.port=4080"
+  auth:
+    container_name: auth
+    restart: 'always'
+    networks:
+      - web
+    image: 'ghcr.io/zitadel/zitadel:v2.0.0-v2-alpha.33-amd64'
+    command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled'
+    environment:
+      - 'ZITADEL_DATABASE_HOST=db'
+      - 'ZITADEL_EXTERNALSECURE=false'
+    depends_on:
+      db:
+        condition: 'service_healthy'
+    ports:
+      - '8080:8080'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.service=auth"
+      - "traefik.http.routers.auth.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.auth.entrypoints=websecure"
+      - "traefik.http.services.auth.loadbalancer.server.port=8080"
 
+  db:
+    container_name: db
+    restart: 'always'
+    networks:
+      - 'zitadel'
+    image: 'cockroachdb/cockroach:v22.1.0'
+    command: 'start-single-node --insecure'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health?ready=1"]
+      interval: '10s'
+      timeout: '30s'
+      retries: 5
+      start_period: '20s'
+    ports:
+      - '9090:8080'
+      - '26257:26257'
+    networks: 
+      - web
   reverse-proxy:
     # The official v2 Traefik docker image
     image: traefik
