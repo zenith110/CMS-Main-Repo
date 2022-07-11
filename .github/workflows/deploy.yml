@@ -22,7 +22,6 @@ jobs:
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
       - name: Dockerize Backend
         run: |
-          cd ../
           ls
           docker build --tag cms-backend -f ./dev.dockerfile ./
       - name: Docker push cms-backend
