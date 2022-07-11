@@ -22,6 +22,7 @@ jobs:
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
       - name: Dockerize Backend
         run: |
+          git pull --recurse-submodules
           cd backend/
           git pull
           ls
