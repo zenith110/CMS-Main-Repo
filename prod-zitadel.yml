@@ -69,7 +69,7 @@ services:
     networks:
       - web
     image: 'ghcr.io/zitadel/zitadel:v2.0.0-v2-alpha.33-amd64'
-    command: 'start-from-init --config /prod-zitadel-config.yaml --config /prod-zitadel-secrets.yaml --steps /prod-zitadel-init-steps.yaml --masterkey "${ZITADEL_MASTERKEY}" --tlsMode external'
+    command: 'start-from-init --config zitadel/prod-zitadel-config.yaml --config zitadel/prod-zitadel-secrets.yaml --steps zitadel/prod-zitadel-init-steps.yaml --masterkey "${ZITADEL_MASTERKEY}" --tlsMode external'
     environment:
       - 'ZITADEL_DATABASE_HOST=db'
       - 'ZITADEL_EXTERNALSECURE=false'
@@ -85,17 +85,17 @@ services:
       - "traefik.http.routers.auth.entrypoints=websecure"
       - "traefik.http.services.auth.loadbalancer.server.port=8080"
     volumes:
-      - './prod-zitadel-config.yaml:/prod-zitadel-config.yaml:ro'
-      - './prod-zitadel-secrets.yaml:/prod-zitadel-secrets.yaml:ro'
-      - './prod-zitadel-init-steps.yaml:/prod-zitadel-init-steps.yaml:ro'
-      - 'zitadel-certs:/crdb-certs:ro'
+      - './zitadel/prod-zitadel-config.yaml:/prod-zitadel-config.yaml:ro'
+      - './zitadel/prod-zitadel-secrets.yaml:/prod-zitadel-secrets.yaml:ro'
+      - './zitadel/prod-zitadel-init-steps.yaml:/prod-zitadel-init-steps.yaml:ro'
+      - './zitadel/zitadel-certs:/crdb-certs:ro'
   chown:
     image: 'cockroachdb/cockroach:v22.1.0'
     entrypoint: [ '/bin/bash', '-c' ]
     command: [ 'cp /certs/ca.crt /zitadel-certs/ && cp /certs/client.root.crt /zitadel-certs/ && cp /certs/client.root.key /zitadel-certs/ && chown 1000:1000 /zitadel-certs/* && chmod 0400 /zitadel-certs/*' ]
     volumes:
       - certs:/certs:ro
-      - zitadel-certs:/zitadel-certs:rw
+      - ./zitadel/zitadel-certs:/zitadel-certs:rw
     depends_on:
       auth-db:
         condition: 'service_healthy'
