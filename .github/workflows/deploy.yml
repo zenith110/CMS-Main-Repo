@@ -25,9 +25,11 @@ jobs:
         run: |
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
       - name: Dockerize Backend
+        env:
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           cd backend/
-          docker build --tag cms-backend -f ./dev.dockerfile ./
+          docker build --tag cms-backend:$IMAGE_TAG -f ./dev.dockerfile ./
       - name: Docker push cms-backend
         env:
           IMAGE_TAG: ${{ github.sha }}
@@ -50,6 +52,8 @@ jobs:
         run: |
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
       - name: Dockerize Frontend
+        env:
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           cd frontend/
           docker build --tag cms-frontend:$IMAGE_TAG -f ./dev.dockerfile ./
