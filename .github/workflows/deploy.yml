@@ -26,10 +26,8 @@ jobs:
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
       - name: Dockerize Backend
         run: |
-          git pull --recurse-submodules
           cd backend/
-          git pull
-          ls
+          docker build --tag cms-backend -f ./dev.dockerfile ./
       - name: Docker push cms-backend
         env:
           BACKEND: ${{ secrets.BACKEND }}
@@ -52,7 +50,6 @@ jobs:
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
       - name: Dockerize Backend
         run: |
-          cd ../
           cd frontend/
           docker build --tag cms-frontend -f ./dev.dockerfile ./
       - name: Docker push cms-frontend
