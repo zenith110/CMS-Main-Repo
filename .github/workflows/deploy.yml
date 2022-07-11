@@ -26,7 +26,6 @@ jobs:
           cd backend/
           git pull
           ls
-          docker build --tag cms-backend -f ./dev.dockerfile ./
       - name: Docker push cms-backend
         env:
           BACKEND: ${{ secrets.BACKEND }}
