@@ -9,7 +9,11 @@ jobs:
   Dockerizing-Backend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+          token: ${{ secrets.SUBMODULE_TOKEN }}
       - name: Set up Go 
         uses: actions/setup-go@v2
         with:
@@ -35,7 +39,11 @@ jobs:
   Dockerizing-Frontend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+          token: ${{ secrets.SUBMODULE_TOKEN }}
       - name: Docker Login
         env:
           DOCKER_USER: "${{ secrets.DOCKER_USER }}"
