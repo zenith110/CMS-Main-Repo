@@ -1,0 +1,52 @@
+# Deploys a payload to the server to get the latest data
+name: Deploy to Docker
+# Deploys data based off master branch
+on:
+  push:
+    branches: [master]
+jobs:
+  Dockerizing-Backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Go 
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.17
+      - name: Docker Login
+        env:
+          DOCKER_USER: "${{ secrets.DOCKER_USER }}"
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+      - name: Dockerize Backend
+        run: |
+          cd backend/
+          docker build --tag cms-backend -f ./dev.dockerfile ./
+      - name: Docker push cms-backend
+        env:
+          BACKEND: ${{ secrets.BACKEND }}
+        run: |
+          docker tag cms-backend $BACKEND
+          docker push $BACKEND
+  Dockerizing-Frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Docker Login
+        env:
+          DOCKER_USER: "${{ secrets.DOCKER_USER }}"
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+      - name: Dockerize Backend
+        run: |
+          cd frontend/
+          docker build --tag cms-frontend -f ./dev.dockerfile ./
+      - name: Docker push cms-frontend
+        env:
+          FRONTEND: ${{ secrets.FRONTEND }}
+        run: |
+          docker tag cms-frontend $FRONTEND
+          docker push $FRONTEND
+  
