@@ -1,0 +1,67 @@
+# Deploys a payload to the server to get the latest data
+name: Deploy to Docker
+# Deploys data based off master branch
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  Dockerizing-Backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+          token: ${{ secrets.SUBMODULE_TOKEN }}
+      - name: Set up Go 
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.17
+      - name: Docker Login
+        env:
+          DOCKER_USER: "${{ secrets.DOCKER_USER }}"
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+      - name: Dockerize Backend
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          cd backend/
+          docker build --tag cms-backend:$IMAGE_TAG -f ./dev.dockerfile ./
+      - name: Docker push cms-backend
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          BACKEND: ${{ secrets.BACKEND }}
+        run: |
+          docker tag cms-backend:$IMAGE_TAG $BACKEND
+          docker push $BACKEND
+  Dockerizing-Frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+          token: ${{ secrets.SUBMODULE_TOKEN }}
+      - name: Docker Login
+        env:
+          DOCKER_USER: "${{ secrets.DOCKER_USER }}"
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+      - name: Dockerize Frontend
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          cd frontend/
+          docker build --tag cms-frontend:$IMAGE_TAG -f ./dev.dockerfile ./
+      - name: Docker push cms-frontend
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          FRONTEND: ${{ secrets.FRONTEND }}
+        run: |
+          docker tag cms-frontend:$IMAGE_TAG $FRONTEND
+          docker push $FRONTEND
+  
