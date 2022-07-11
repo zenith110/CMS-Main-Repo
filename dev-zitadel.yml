@@ -16,7 +16,7 @@ services:
       CHOKIDAR_USEPOLLING: "true"
     restart: unless-stopped
     ports:
-      - 8443:8443
+      - ${BACKEND_PORT}:8443
     env_file:
       - .env
     depends_on:
@@ -32,7 +32,7 @@ services:
       CHOKIDAR_USEPOLLING: "true"
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - 4000:3000
     volumes:
       - /app/node_modules
       - ./frontend/:/home/app/admin-tool
@@ -50,7 +50,7 @@ services:
     volumes:
       - ./zinc:/data
     ports:
-      - "4080:4080"
+      - 4080:4080
     depends_on:
       - graphql
       - mongo
@@ -70,7 +70,7 @@ services:
       db:
         condition: 'service_healthy'
     ports:
-      - '8080:8080'
+      - 8080:8080
 
   db:
     container_name: auth-db
@@ -86,11 +86,14 @@ services:
       retries: 5
       start_period: '20s'
     ports:
-      - '9090:8080'
-      - '26257:26257'
+      - 9090:8080
+      - 26257:26257
     networks: 
       - zitadel
+    volumes:
+      - ./auth_db:/cockroach/cockroach-data"
 volumes:
   mongo_storage:
+  
 networks:
   zitadel:

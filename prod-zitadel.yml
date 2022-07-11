@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 
 services:
   mongo:
@@ -7,6 +7,8 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - ./mongo:/data/db
   cms-backend:
     image: zenith110/cms-backend
     container_name: cms-backend
@@ -20,7 +22,7 @@ services:
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.services.backend.loadbalancer.server.port=8443"
     ports:
-      - 8443:8443
+      - ${BACKEND_PORT}:8443
     env_file:
       - .env
     networks:
@@ -49,7 +51,7 @@ services:
     volumes:
       - ./zinc:/data
     ports:
-      - "4080:4080"
+      - 4080:4080
     depends_on:
       - graphql
       - mongo
@@ -67,13 +69,13 @@ services:
     networks:
       - web
     image: 'ghcr.io/zitadel/zitadel:v2.0.0-v2-alpha.33-amd64'
-    command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters"'
+    command: 'start-from-init --config /prod-zitadel-config.yaml --config /prod-zitadel-secrets.yaml --steps /prod-zitadel-init-steps.yaml --masterkey "${ZITADEL_MASTERKEY}" --tlsMode external'
     environment:
       - 'ZITADEL_DATABASE_HOST=db'
       - 'ZITADEL_EXTERNALSECURE=false'
     depends_on:
-      db:
-        condition: 'service_healthy'
+      chown:
+        condition: 'service_completed_successfully'
     ports:
       - '8080:8080'
     labels:
@@ -82,14 +84,29 @@ services:
       - "traefik.http.routers.auth.tls.certresolver=dns-cloudflare"
       - "traefik.http.routers.auth.entrypoints=websecure"
       - "traefik.http.services.auth.loadbalancer.server.port=8080"
+    volumes:
+      - './prod-zitadel-config.yaml:/prod-zitadel-config.yaml:ro'
+      - './prod-zitadel-secrets.yaml:/prod-zitadel-secrets.yaml:ro'
+      - './prod-zitadel-init-steps.yaml:/prod-zitadel-init-steps.yaml:ro'
+      - 'zitadel-certs:/crdb-certs:ro'
+  chown:
+    image: 'cockroachdb/cockroach:v22.1.0'
+    entrypoint: [ '/bin/bash', '-c' ]
+    command: [ 'cp /certs/ca.crt /zitadel-certs/ && cp /certs/client.root.crt /zitadel-certs/ && cp /certs/client.root.key /zitadel-certs/ && chown 1000:1000 /zitadel-certs/* && chmod 0400 /zitadel-certs/*' ]
+    volumes:
+      - certs:/certs:ro
+      - zitadel-certs:/zitadel-certs:rw
+    depends_on:
+      auth-db:
+        condition: 'service_healthy'
 
-  db:
-    container_name: db
+  auth-db:
+    container_name: auth-db
     restart: 'always'
     networks:
       - 'zitadel'
     image: 'cockroachdb/cockroach:v22.1.0'
-    command: 'start-single-node'
+    command: 'start-single-node --advertise-addr auth-db'
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health?ready=1"]
       interval: '10s'
@@ -97,10 +114,11 @@ services:
       retries: 5
       start_period: '20s'
     ports:
-      - '9090:8080'
-      - '26257:26257'
-    networks: 
-      - web
+      - 9090:8080
+      - 26257:26257
+    volumes:
+      -  certs:/cockroach/certs:rw
+      - ./auth-db:/cockroach/cockroach-data:rw
   reverse-proxy:
     # The official v2 Traefik docker image
     image: traefik
@@ -152,3 +170,6 @@ networks:
   web:
     external:
       name: web
+volumes:
+  certs:
+  zitadel-certs:
