@@ -1,12 +1,16 @@
 version: "3"
 
 services:
-  mongo:
+  mongodb:
     image: mongo
-    restart: always
+    restart: unless-stopped
     container_name: mongodb
+    ports:
+      - 27017:27017
     volumes:
       - ./mongo:/data/db
+    networks:
+      - zitadel
   graphql:
     build:
       context: ./backend
@@ -32,7 +36,7 @@ services:
       CHOKIDAR_USEPOLLING: "true"
     restart: unless-stopped
     ports:
-      - 4000:3000
+      - 80:3000
     volumes:
       - /app/node_modules
       - ./frontend/:/home/app/admin-tool
@@ -46,6 +50,7 @@ services:
       - zitadel
   zinc:
     image: public.ecr.aws/h9e2j3o7/zinc:latest
+    restart: unless-stopped
     container_name: zinc
     volumes:
       - ./zinc:/data
@@ -58,7 +63,7 @@ services:
       - .env
   zitadel:
     container_name: auth
-    restart: 'always'
+    restart: unless-stopped
     networks:
       - 'zitadel'
     image: 'ghcr.io/zitadel/zitadel:v2.0.0-v2-alpha.33-amd64'
@@ -74,7 +79,7 @@ services:
 
   db:
     container_name: auth-db
-    restart: 'always'
+    restart: unless-stopped
     networks:
       - 'zitadel'
     image: 'cockroachdb/cockroach:v22.1.0'
@@ -97,3 +102,4 @@ volumes:
   
 networks:
   zitadel:
+  
