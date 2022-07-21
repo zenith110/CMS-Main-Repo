@@ -32,6 +32,6 @@ To contribute to the project, create an issue.
 
 A template is provided when creating an issue. 
 
-After this is complete, fork the project and work within that fork. 
+After creating an issue, fork the project and work within that fork. 
 
-Once changes are complete, create a pull request and the team will review your pull request. 
+Once changes on the fork are complete, create a pull request and the team will review your pull request. 
