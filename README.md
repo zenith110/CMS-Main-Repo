@@ -28,26 +28,10 @@ Zinc is the search engine of choice, however Elasticsearch can be swapped in and
 Currently the project offers support for Zitadel, however more ldap providers will be rolled out.
 
 ## Contributing guidelines
-To contribute to the project, create an issue. 
+To contribute to the project, create an issue.
 
-Issues should follow a template such as:
-```
-Issue description 
-Issue focus
-```
-
-With the issue focus being either frontend, backend, or documentation.
+A template is provided when creating an issue. 
 
 After this is complete, fork the project and work within that fork. 
 
 Once changes are complete, create a pull request and the team will review your pull request. 
-
-Within the pull request, the pull request should follow this template:
-
-```
-Pull request description
-Issue solved
-Tested locally
-Currently passes tests
-What kind of tests were created
-```
