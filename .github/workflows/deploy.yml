@@ -29,7 +29,7 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           cd backend/
-          docker build --tag cms-backend:$IMAGE_TAG -f ./dev.dockerfile ./
+          docker build --tag cms-backend:$IMAGE_TAG -f ./production.dockerfile ./
       - name: Docker push cms-backend
         env:
           IMAGE_TAG: ${{ github.sha }}
