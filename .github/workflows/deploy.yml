@@ -45,6 +45,10 @@ jobs:
         with:
           submodules: 'true'
           token: ${{ secrets.SUBMODULE_TOKEN }}
+      - name: Setup frontend
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
       - name: Docker Login
         env:
           DOCKER_USER: "${{ secrets.DOCKER_USER }}"
@@ -56,7 +60,7 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           cd frontend/
-          docker build --tag cms-frontend:$IMAGE_TAG -f ./dev.dockerfile ./
+          docker build --tag cms-frontend:$IMAGE_TAG -f ./production.dockerfile ./
       - name: Docker push cms-frontend
         env:
           IMAGE_TAG: ${{ github.sha }}
@@ -64,4 +68,40 @@ jobs:
         run: |
           docker tag cms-frontend:$IMAGE_TAG $FRONTEND
           docker push $FRONTEND
+  Building Go artifacts:
+    needs: [Dockerizing-Frontend, Dockerizing-Backend]
+    runs-on: ubuntu-latest
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v2
+          with:
+            submodules: 'true'
+            token: ${{ secrets.SUBMODULE_TOKEN }}
+        - name: Set up Go 
+          uses: actions/setup-go@v2
+          with:
+            go-version: ^1.17
+        - name: Build go binary
+          run: |
+          cd backend
+          go build server.go
+        - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: go binary
+          path: backend/server
+  Release Go Binary:
+    needs: [Building Go artifacts]
+    runs-on: ubuntu-latest
+    - name: Download a single artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: server
+    - name: Release with Notes
+        uses: softprops/action-gh-release@v1
+        with:
+          files: server
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   

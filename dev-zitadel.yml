@@ -14,10 +14,8 @@ services:
   graphql:
     build:
       context: ./backend
-      dockerfile: dev.dockerfile
+      dockerfile: production.dockerfile
     container_name: graphql
-    environment:
-      CHOKIDAR_USEPOLLING: "true"
     restart: unless-stopped
     ports:
       - ${BACKEND_PORT}:8443
@@ -30,15 +28,11 @@ services:
   admin:
     build:
       context: ./frontend
-      dockerfile: dev.dockerfile
+      dockerfile: production.dockerfile
     container_name: admin
-    environment:
-      CHOKIDAR_USEPOLLING: "true"
     restart: unless-stopped
     ports:
-      - 80:3000
-    env_file:
-      - .env
+      - 80:80
     depends_on:
       - graphql
       - mongodb
@@ -75,7 +69,7 @@ services:
     container_name: auth
     restart: unless-stopped
     networks:
-      - 'zitadel'
+      - zitadel
     image: 'ghcr.io/zitadel/zitadel:v2.0.0-v2-alpha.33-amd64'
     command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled'
     environment:
