@@ -65,35 +65,7 @@ services:
   #     - mongodb
   #   networks:
   #     - zitadel
-  zitadel:
-    container_name: auth
-    restart: unless-stopped
-    networks:
-      - zitadel
-    image: 'ghcr.io/zitadel/zitadel:v2.0.0-v2-alpha.33-amd64'
-    command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled'
-    environment:
-      - 'ZITADEL_DATABASE_HOST=db'
-      - 'ZITADEL_EXTERNALSECURE=false'
-    depends_on:
-      - db
-    ports:
-      - 8080:8080
 
-  db:
-    container_name: auth-db
-    restart: unless-stopped
-    networks:
-      - 'zitadel'
-    image: 'cockroachdb/cockroach:v22.1.0'
-    command: 'start-single-node --insecure'
-    ports:
-      - 9090:8080
-      - 26257:26257
-    networks: 
-      - zitadel
-    volumes:
-      - ./auth_db:/cockroach/cockroach-data"
 
 volumes:
   mongo:

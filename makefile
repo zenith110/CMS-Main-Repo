@@ -1,7 +1,5 @@
-DEV_FILE = dev-zitadel.yml
-PROD_FILE = prod-zitadel.yml
+DEV_FILE = dev.yml
 DEV_DOCKER_COMPOSE=docker-compose -f $(DEV_FILE)
-PROD_DOCKER_COMPOSE=docker-compose -f $(PROD_FILE)
 default: build
 
 #==================================================#
@@ -19,12 +17,7 @@ stop:
 detached: # Runs the containers in daemon mode
 	@echo "Running processes in detached mode!"
 	@$(DEV_DOCKER_COMPOSE) up -d --build
-prod-build:
-	@echo "Now running in prod enviroment"
-	@$(PROD_DOCKER_COMPOSE) up --build
-prod-detached:
-	@echo "Now running in prod enviroment"
-	@$(PROD_DOCKER_COMPOSE) up -d --build
+
 #===============================================#
 #     Application specific commands #
 #===============================================#
