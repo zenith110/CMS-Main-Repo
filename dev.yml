@@ -28,7 +28,7 @@ services:
   admin:
     build:
       context: ./frontend
-      dockerfile: production.dockerfile
+      dockerfile: dev.dockerfile
     container_name: admin
     restart: unless-stopped
     ports:
@@ -54,17 +54,17 @@ services:
       - .env
     networks:
       - zitadel
-  # keploy:
-  #   image: ghcr.io/keploy/keploy
-  #   ports:
-  #     - 8081:8081
-  #   environment:
-  #     KEPLOY_MODE: "off"
-  #     KEPLOY_MONGO_URI: "mongodb://mongo:27017"
-  #   depends_on:
-  #     - mongodb
-  #   networks:
-  #     - zitadel
+  keploy:
+    image: ghcr.io/keploy/keploy
+    ports:
+      - 8081:8081
+    environment:
+      KEPLOY_MODE: "off"
+      KEPLOY_MONGO_URI: "mongodb://mongo:27017"
+    depends_on:
+      - mongodb
+    networks:
+      - zitadel
 
 
 volumes:
