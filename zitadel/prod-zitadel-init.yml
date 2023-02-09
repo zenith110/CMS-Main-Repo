@@ -1,9 +1,0 @@
-# All possible options and their defaults: https://github.com/zitadel/zitadel/blob/v2-alpha/cmd/adminn/setup/steps.yaml
-S3DefaultInstance:
-  CustomDomain: ${BACKEND_PORT}
-  Org:
-    Name: 'My Org'
-    Human:
-      # use the loginname root@my-org.my.domain
-      Username: ${PROD_ZITADEL_ROOT_USERNAME}
-      Password: ${PROD_ZITADEL_ROOT_USER_PASSWORD}

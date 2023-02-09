@@ -17,7 +17,9 @@ stop:
 detached: # Runs the containers in daemon mode
 	@echo "Running processes in detached mode!"
 	@$(DEV_DOCKER_COMPOSE) up -d --build
-
+update-submodules:
+	@echo "Now updating submodules"
+	git submodule update --init --recursive
 #===============================================#
 #     Application specific commands #
 #===============================================#
