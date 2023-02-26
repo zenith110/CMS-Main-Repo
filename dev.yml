@@ -10,7 +10,7 @@ services:
     volumes:
       - mongo:/data/db
     networks:
-      - zitadel
+      - cms-network
   graphql:
     build:
       context: ./backend
@@ -18,33 +18,35 @@ services:
     container_name: graphql
     restart: unless-stopped
     ports:
-      - ${BACKEND_PORT}:8443
+      - "8443:8443"
     env_file:
       - .env
     depends_on:
       - mongodb
     networks: 
-      - zitadel
-  admin:
+      - cms-network
+  frontend:
     build:
-      context: ./frontend
+      context: frontend/new-frontend
       dockerfile: dev.dockerfile
     container_name: admin
     restart: unless-stopped
     ports:
-      - 80:80
+      - "5173:5173"
     depends_on:
       - graphql
       - mongodb
       - zinc
+    env_file:
+      - .env
     networks: 
-      - zitadel
+      - cms-network
   zinc:
     image: public.ecr.aws/h9e2j3o7/zinc:latest
     restart: unless-stopped
     container_name: zinc
     volumes:
-      - ./zinc:/data
+      - zinc:/data
     ports:
       - 4080:4080
     depends_on:
@@ -53,12 +55,11 @@ services:
     env_file:
       - .env
     networks:
-      - zitadel
-  
-
+      - cms-network
 
 volumes:
   mongo:
+  zinc:
 networks:
-  zitadel:
+  cms-network:
   

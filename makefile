@@ -6,8 +6,11 @@ default: build
 # Builds and does other docker functionality #
 #==================================================#
 build: # Builds using all the dockerfiles and docker-compose provided
-	@echo "Building site backend"
+	@echo "Building site"
 	@$(DEV_DOCKER_COMPOSE) up --build
+up:
+	@echo "Building site"
+	@$(DEV_DOCKER_COMPOSE) up
 clean: # Removes all orphans processes
 	@echo "Cleaning up processes for docker-compose"
 	@$(DEV_DOCKER_COMPOSE) down -v
