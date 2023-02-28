@@ -27,7 +27,7 @@ services:
       - cms-network
   frontend:
     build:
-      context: frontend/new-frontend
+      context: ./frontend
       dockerfile: dev.dockerfile
     container_name: admin
     restart: unless-stopped
