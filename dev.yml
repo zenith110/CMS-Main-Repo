@@ -56,10 +56,26 @@ services:
       - .env
     networks:
       - cms-network
+  redis:
+    image: redis
+    restart: unless-stopped
+    container_name: redis
+    volumes:
+      - cache:/data
+    ports:
+      - 6379:6379
+    depends_on:
+      - graphql
+      - mongodb
+      - zinc
+    networks:
+      - cms-network
+    
 
 volumes:
   mongo:
   zinc:
+  cache:
 networks:
   cms-network:
   
