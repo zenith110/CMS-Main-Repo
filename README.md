@@ -12,9 +12,8 @@ The purpose of this software is to allow users to spin up a content management s
 ## Backend
 The backend is written in Go, uses gqlgen to generate resolves from the schema, and is used as a git submodule within the project.
 
-The backend is responsible for creating article data, and e-commerce.
+The backend is responsible for creating article data, project data, and creating users.
 
-It is also responsible for connecting ldap providers to the frontend, 
 
 ## Frontend
 The frontend is a React based admin panel that is very customizable. 
